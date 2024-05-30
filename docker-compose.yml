@@ -1,0 +1,5 @@
+services:
+  corn-watch-sink:
+    image: psalchow/corn-watch-sink
+    env_file:
+      - .env

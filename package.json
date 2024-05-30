@@ -1,0 +1,23 @@
+{
+  "name": "sink-service",
+  "version": "1.0.0",
+  "description": "",
+  "main": "src/index.ts",
+  "scripts": {
+    "build": "esbuild src/index.ts --bundle --platform=node --outdir=out",
+    "prettier": "prettier -w './src/*.ts'",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@influxdata/influxdb-client": "^1.33.2",
+    "mqtt": "^5.6.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.12.12",
+    "esbuild": "0.21.4",
+    "prettier": "^3.2.5",
+    "typescript": "^5.4.5"
+  }
+}
