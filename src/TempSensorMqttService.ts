@@ -63,7 +63,4 @@ export class TempSensorMqttService {
   }
 }
 
-const mapToJSON = (json: string): TempSensorMeasurement =>
-  JSON.parse(json, (key, value) =>
-    key === "atS" || key === "timeStampS" ? new Date(value * 1000) : value,
-  );
+const mapToJSON = (json: string): TempSensorMeasurement => JSON.parse(json);

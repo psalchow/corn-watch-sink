@@ -76,7 +76,7 @@ const mapTempSensorMeasurementToInfluxPoints = (
 ) =>
   measurement.data?.map((tempData) =>
     new Point(measurement.sensor)
-      .timestamp(tempData.timeStampS)
+      .timestamp(new Date(measurement.atS * 1000))
       .tag(TAG_DEVICE_GROUP, measurement.device)
       .tag(TAG_DEVICE, tempData.name)
       .floatField(FIELD_TEMP_TOP, tempData.temp.top)
