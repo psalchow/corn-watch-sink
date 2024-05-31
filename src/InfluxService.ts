@@ -4,6 +4,7 @@ import { INFLUX_BUCKET, INFLUX_ORG, INFLUX_TOKEN, INFLUX_URL } from "./env";
 import {
   FIELD_BATTERY_VOLTAGE,
   FIELD_HUMIDITY,
+  FIELD_MEASUREMENT_TIME,
   FIELD_TEMP_BOTTOM,
   FIELD_TEMP_HUMIDITY,
   FIELD_TEMP_MID,
@@ -84,7 +85,8 @@ const mapTempSensorMeasurementToInfluxPoints = (
       .floatField(FIELD_TEMP_BOTTOM, tempData.temp.bottom)
       .floatField(FIELD_TEMP_HUMIDITY, tempData.temp.dht)
       .uintField(FIELD_HUMIDITY, tempData.humidity)
-      .uintField(FIELD_BATTERY_VOLTAGE, tempData.batteryMV),
+      .uintField(FIELD_BATTERY_VOLTAGE, tempData.batteryMV)
+      .uintField(FIELD_MEASUREMENT_TIME, tempData.timeStampS),
   );
 
 export const InfluxService = { writeTempSensorMeasurement, cleanupAndClose };
