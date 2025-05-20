@@ -8,10 +8,11 @@ import {
 
 export class TempSensorMqttService {
   private client: mqtt.MqttClient | undefined;
-  private topicName: string = `${MQTT_TOPIC_PREFIX}/out`;
+  private topicName: string = `/+/out`; // currently '/corn-watch-1/out' & '/corn-watch-2/out'
 
   constructor(
     private readonly onTempSensorMeasurementCallback: (
+      topic: string,
       measurement: TempSensorMeasurement,
     ) => void,
   ) {}
@@ -34,12 +35,12 @@ export class TempSensorMqttService {
 
     this.client.on("message", (topic, message) => {
       console.log(`Received message on topic '${topic}'`);
-      if (topic !== this.topicName) {
+      if (!topic?.startsWith(MQTT_TOPIC_PREFIX)) {
         return;
       }
 
       // message is Buffer
-      this.onTempSensorMeasurementCallback(mapToJSON(message.toString()));
+      this.onTempSensorMeasurementCallback(topic, mapToJSON(message.toString()));
     });
   }
 
