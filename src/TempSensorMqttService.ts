@@ -40,7 +40,10 @@ export class TempSensorMqttService {
       }
 
       // message is Buffer
-      this.onTempSensorMeasurementCallback(topic, mapToJSON(message.toString()));
+      this.onTempSensorMeasurementCallback(
+        topic,
+        mapToJSON(message.toString()),
+      );
     });
   }
 

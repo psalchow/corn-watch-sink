@@ -49,7 +49,10 @@ const getWriteApi = () => {
   return writeApi;
 };
 
-const writeTempSensorMeasurement = (topic: string, measurement: TempSensorMeasurement) => {
+const writeTempSensorMeasurement = (
+  topic: string,
+  measurement: TempSensorMeasurement,
+) => {
   const points = mapTempSensorMeasurementToInfluxPoints(measurement) || [];
 
   if (points.length > 0) {
@@ -81,40 +84,46 @@ const mapTempSensorMeasurementToInfluxPoints = (
       .tag(TAG_DEVICE_GROUP, measurement.device)
       .tag(TAG_DEVICE, tempData.name);
 
-      addTempField(dataPoint, FIELD_TEMP_TOP, tempData.temp.top);
-      addTempField(dataPoint, FIELD_TEMP_MID, tempData.temp.mid);
-      addTempField(dataPoint, FIELD_TEMP_BOTTOM, tempData.temp.bottom);
-      addTempField(dataPoint, FIELD_TEMP_HUMIDITY, tempData.temp.dht);
+    addTempField(dataPoint, FIELD_TEMP_TOP, tempData.temp.top);
+    addTempField(dataPoint, FIELD_TEMP_MID, tempData.temp.mid);
+    addTempField(dataPoint, FIELD_TEMP_BOTTOM, tempData.temp.bottom);
+    addTempField(dataPoint, FIELD_TEMP_HUMIDITY, tempData.temp.dht);
 
-      addHumidityField(dataPoint, FIELD_HUMIDITY, tempData.humidity)
+    addHumidityField(dataPoint, FIELD_HUMIDITY, tempData.humidity);
 
-      dataPoint
-        .uintField(FIELD_BATTERY_VOLTAGE, tempData.batteryMV)
-        .uintField(FIELD_MEASUREMENT_TIME, tempData.timeStampS);
+    dataPoint
+      .uintField(FIELD_BATTERY_VOLTAGE, tempData.batteryMV)
+      .uintField(FIELD_MEASUREMENT_TIME, tempData.timeStampS);
 
-      return dataPoint;
+    return dataPoint;
   });
 
-  const addTempField = (dataPoint: Point, fieldName: string, data?: number) => {
-    if (typeof data !== 'number') {
-      return;
-    }
+const addTempField = (dataPoint: Point, fieldName: string, data?: number) => {
+  if (typeof data !== "number") {
+    return;
+  }
 
-    dataPoint.floatField(fieldName, data);
-  };
+  dataPoint.floatField(fieldName, data);
+};
 
-  const addHumidityField = (dataPoint: Point, fieldName: string, data?: number) => {
-    if (typeof data !== 'number') {
-      return;
-    }
+const addHumidityField = (
+  dataPoint: Point,
+  fieldName: string,
+  data?: number,
+) => {
+  if (typeof data !== "number") {
+    return;
+  }
 
-    if (data > 100 || data < 0) {
-      // Out of range. Write error or raise Alert
-      console.error(`Received invalid humidity value for ${fieldName}: ${data}. It is expected to be between 0 and 100. This indicates an error occurred while reading DHT sensor.`);
-      return;
-    }
+  if (data > 100 || data < 0) {
+    // Out of range. Write error or raise Alert
+    console.error(
+      `Received invalid humidity value for ${fieldName}: ${data}. It is expected to be between 0 and 100. This indicates an error occurred while reading DHT sensor.`,
+    );
+    return;
+  }
 
-    dataPoint.uintField(fieldName, data);
-  };
+  dataPoint.uintField(fieldName, data);
+};
 
 export const InfluxService = { writeTempSensorMeasurement, cleanupAndClose };
