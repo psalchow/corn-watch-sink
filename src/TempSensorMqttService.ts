@@ -8,7 +8,7 @@ import {
 
 export class TempSensorMqttService {
   private client: mqtt.MqttClient | undefined;
-  private topicName: string = `/+/out`; // currently '/corn-watch-1/out' & '/corn-watch-2/out'
+  private topicName: string = `${MQTT_TOPIC_PREFIX}/out`; // currently '/corn-watch/sensors/corn-watch-1/out' & '/corn-watch/sensors/corn-watch-2/out'
 
   constructor(
     private readonly onTempSensorMeasurementCallback: (
@@ -35,9 +35,6 @@ export class TempSensorMqttService {
 
     this.client.on("message", (topic, message) => {
       console.log(`Received message on topic '${topic}'`);
-      if (!topic?.startsWith(MQTT_TOPIC_PREFIX)) {
-        return;
-      }
 
       // message is Buffer
       this.onTempSensorMeasurementCallback(
