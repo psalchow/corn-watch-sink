@@ -11,7 +11,6 @@ const INFLUX_BUCKET = process.env["INFLUX_BUCKET"]!;
 const MQTT_BROKER_URL = process.env["MQTT_BROKER_URL"]!;
 const MQTT_USER = process.env["MQTT_USER"]!;
 const MQTT_PASSWORD = process.env["MQTT_PASSWORD"]!;
-const MQTT_TOPIC_PREFIX = process.env["MQTT_TOPIC_PREFIX"]!;
 
 export {
   INFLUX_URL,
@@ -21,5 +20,4 @@ export {
   MQTT_BROKER_URL,
   MQTT_USER,
   MQTT_PASSWORD,
-  MQTT_TOPIC_PREFIX,
 };

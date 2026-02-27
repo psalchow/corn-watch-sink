@@ -1,17 +1,8 @@
 import { Agent } from "http";
 import { InfluxDB, Point, WriteApi } from "@influxdata/influxdb-client";
 import { INFLUX_BUCKET, INFLUX_ORG, INFLUX_TOKEN, INFLUX_URL } from "./env";
-import {
-  FIELD_BATTERY_VOLTAGE,
-  FIELD_HUMIDITY,
-  FIELD_MEASUREMENT_TIME,
-  FIELD_TEMP_BOTTOM,
-  FIELD_TEMP_HUMIDITY,
-  FIELD_TEMP_MID,
-  FIELD_TEMP_TOP,
-  TAG_DEVICE,
-  TAG_DEVICE_GROUP,
-} from "./const";
+import { GenericData, TypedValue } from "./types";
+import { PRIMARY_KEY } from "./const";
 
 let keepAliveAgent: Agent | undefined;
 const getKeepAliveAgent = () => {
@@ -49,19 +40,12 @@ const getWriteApi = () => {
   return writeApi;
 };
 
-const writeTempSensorMeasurement = (
-  topic: string,
-  measurement: TempSensorMeasurement,
-) => {
-  const points = mapTempSensorMeasurementToInfluxPoints(measurement) || [];
-
-  if (points.length > 0) {
-    console.log(
-      `Writing ${points.length} points to Influx measurement '${measurement.sensor}'`,
-    );
-    getWriteApi().writePoints(points);
+const writeData = (data: GenericData[]) => {
+  if (data.length > 0) {
+    console.log(`Writing ${data.length} points to Influx`);
+    getWriteApi().writePoints(mapToPoints(data));
   } else {
-    console.log(`No Points to write for measurement '${measurement.sensor}'`);
+    console.log(`No Points to write to Influx`);
   }
 };
 
@@ -75,55 +59,35 @@ const cleanupAndClose = async () => {
   console.log("InfluxService closed");
 };
 
-const mapTempSensorMeasurementToInfluxPoints = (
-  measurement: TempSensorMeasurement,
-) =>
-  measurement.data?.map((tempData) => {
-    const dataPoint = new Point(measurement.sensor)
-      .timestamp(new Date(measurement.atS * 1000))
-      .tag(TAG_DEVICE_GROUP, measurement.device)
-      .tag(TAG_DEVICE, tempData.name);
+const mapToPoints = (generic: GenericData[]) =>
+  generic.map((data) => {
+    const point = new Point(data.measurement);
 
-    addTempField(dataPoint, FIELD_TEMP_TOP, tempData.temp.top);
-    addTempField(dataPoint, FIELD_TEMP_MID, tempData.temp.mid);
-    addTempField(dataPoint, FIELD_TEMP_BOTTOM, tempData.temp.bottom);
-    addTempField(dataPoint, FIELD_TEMP_HUMIDITY, tempData.temp.dht);
+    point.timestamp(data.at).tag(PRIMARY_KEY, data.key);
+    if (data.tags) {
+      // write tags
+      Object.entries(data.tags).forEach(([tagName, tagValue]) => {
+        point.tag(tagName, tagValue);
+      });
+    }
 
-    addHumidityField(dataPoint, FIELD_HUMIDITY, tempData.humidity);
-
-    dataPoint
-      .uintField(FIELD_BATTERY_VOLTAGE, tempData.batteryMV)
-      .uintField(FIELD_MEASUREMENT_TIME, tempData.timeStampS);
-
-    return dataPoint;
+    // write fields
+    Object.entries(data.fields).forEach(
+      ([fieldName, fieldValue]: [string, TypedValue]) => {
+        if ("string" in fieldValue) {
+          point.stringField(fieldName, fieldValue.string);
+        } else if ("int" in fieldValue) {
+          point.intField(fieldName, fieldValue.int);
+        } else if ("float" in fieldValue) {
+          point.floatField(fieldName, fieldValue.float);
+        } else if ("boolean" in fieldValue) {
+          point.booleanField(fieldName, fieldValue.boolean);
+        } else {
+          console.warn(`Unknown field type for ${fieldName}:`, fieldValue);
+        }
+      },
+    );
+    return point;
   });
 
-const addTempField = (dataPoint: Point, fieldName: string, data?: number) => {
-  if (typeof data !== "number") {
-    return;
-  }
-
-  dataPoint.floatField(fieldName, data);
-};
-
-const addHumidityField = (
-  dataPoint: Point,
-  fieldName: string,
-  data?: number,
-) => {
-  if (typeof data !== "number") {
-    return;
-  }
-
-  if (data > 100 || data < 0) {
-    // Out of range. Write error or raise Alert
-    console.error(
-      `Received invalid humidity value for ${fieldName}: ${data}. It is expected to be between 0 and 100. This indicates an error occurred while reading DHT sensor.`,
-    );
-    return;
-  }
-
-  dataPoint.uintField(fieldName, data);
-};
-
-export const InfluxService = { writeTempSensorMeasurement, cleanupAndClose };
+export const InfluxService = { writeData, cleanupAndClose };

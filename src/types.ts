@@ -1,14 +1,19 @@
-interface TempSensorData {
-  name: string;
-  batteryMV: number;
-  timeStampS: number;
-  temp: { top: number; bottom: number; mid: number; dht: number };
-  humidity: number;
-}
+export type StringVal = { string: string };
+export type IntVal = { int: number };
+export type FloatVal = { float: number };
+export type BooleanVal = { boolean: boolean };
 
-interface TempSensorMeasurement {
-  atS: number;
-  sensor: string;
-  device: string;
-  data?: TempSensorData[];
-}
+export type TypedValue = StringVal | IntVal | FloatVal | BooleanVal;
+
+export type GenericData = {
+  at: Date;
+  measurement: string;
+  key: string;
+  tags: Record<string, string> | null;
+  fields: Record<string, TypedValue>;
+};
+
+export type DataTransformer = (
+  topic: string,
+  message: string,
+) => { timeseries?: GenericData[]; lvc?: GenericData[] };
