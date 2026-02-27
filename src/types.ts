@@ -1,9 +1,10 @@
 export type StringVal = { string: string };
 export type IntVal = { int: number };
+export type UintVal = { uint: number };
 export type FloatVal = { float: number };
 export type BooleanVal = { boolean: boolean };
 
-export type TypedValue = StringVal | IntVal | FloatVal | BooleanVal;
+export type TypedValue = StringVal | IntVal | UintVal | FloatVal | BooleanVal;
 
 export type GenericData = {
   at: Date;

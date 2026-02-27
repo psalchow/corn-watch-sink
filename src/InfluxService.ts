@@ -78,6 +78,8 @@ const mapToPoints = (generic: GenericData[]) =>
           point.stringField(fieldName, fieldValue.string);
         } else if ("int" in fieldValue) {
           point.intField(fieldName, fieldValue.int);
+        } else if ("uint" in fieldValue) {
+          point.uintField(fieldName, fieldValue.uint);
         } else if ("float" in fieldValue) {
           point.floatField(fieldName, fieldValue.float);
         } else if ("boolean" in fieldValue) {

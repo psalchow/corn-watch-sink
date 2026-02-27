@@ -45,8 +45,8 @@ const TRANSFORMER: DataTransformer = (_topic: string, message: string) => {
           [FIELD_TEMP_MID]: { float: tempData.temp.mid },
           [FIELD_TEMP_BOTTOM]: { float: tempData.temp.bottom },
           [FIELD_TEMP_HUMIDITY]: { float: tempData.temp.dht },
-          [FIELD_BATTERY_VOLTAGE]: { int: tempData.batteryMV },
-          [FIELD_MEASUREMENT_TIME]: { int: tempData.timeStampS },
+          [FIELD_BATTERY_VOLTAGE]: { uint: tempData.batteryMV },
+          [FIELD_MEASUREMENT_TIME]: { uint: tempData.timeStampS },
         },
       };
 
@@ -57,7 +57,7 @@ const TRANSFORMER: DataTransformer = (_topic: string, message: string) => {
             `Received invalid humidity value for ${FIELD_HUMIDITY}: ${tempData.humidity}. It is expected to be between 0 and 100. This indicates an error occurred while reading DHT sensor.`,
           );
         } else {
-          res.fields[FIELD_HUMIDITY] = { int: tempData.humidity };
+          res.fields[FIELD_HUMIDITY] = { uint: tempData.humidity };
         }
       }
       return res;
