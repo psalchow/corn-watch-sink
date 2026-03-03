@@ -59,7 +59,7 @@ const cleanupAndClose = async () => {
   console.log("InfluxService closed");
 };
 
-const mapToPoints = (generic: GenericData[]) =>
+export const mapToPoints = (generic: GenericData[]) =>
   generic.map((data) => {
     const point = new Point(data.measurement);
 

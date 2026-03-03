@@ -68,7 +68,7 @@ export class MqttService<ConfigType> {
   }
 }
 
-const sub2regex = (topic: string): RegExp => {
+export const sub2regex = (topic: string): RegExp => {
   return new RegExp(
     `^${topic}\$`.replaceAll("+", "[^/]*").replace("/#", "(|/.*)"),
   );

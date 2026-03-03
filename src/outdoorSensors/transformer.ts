@@ -48,18 +48,16 @@ const TRANSFORMER: DataTransformer = (topic: string, message: string) => {
 
     if (typeof tempMesurement.tC === "number") {
       data.fields[FIELD_TEMP] = { float: tempMesurement.tC };
+      result = [data];
     }
-
-    result = [data];
   } else if (kind === "humidity") {
     const humidityMeasurement: HumiditySensorData =
       measurement as HumiditySensorData;
 
     if (typeof humidityMeasurement.rh === "number") {
       data.fields[FIELD_HUMIDITY] = { float: humidityMeasurement.rh };
+      result = [data];
     }
-
-    result = [data];
   }
 
   return {
