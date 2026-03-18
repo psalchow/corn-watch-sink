@@ -28,7 +28,7 @@ describe("InfluxService", () => {
 
       expect(points).toHaveLength(1);
       expect(points[0]).toBeDefined();
-      expect(Object.entries(points[0].fields)).toHaveLength(5);
+      expect(Object.entries(points[0].getFieldNames())).toHaveLength(5);
       expect(points[0].toLineProtocol()).toEqual(
         'test-measurement,location=home,primary-key=test-key,sensor=temp-1 booleanField=T,floatField=23.5,intField=-42i,stringField="hello",uintField=100u 1704110400000000000',
       );

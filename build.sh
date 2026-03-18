@@ -3,4 +3,4 @@
 npm install
 npm run build
 
-docker build -t psalchow/corn-watch-sink .
+docker build -t psalchow/grain-watch-sink .

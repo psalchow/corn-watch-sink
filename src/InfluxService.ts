@@ -1,6 +1,6 @@
 import { Agent } from "http";
-import { InfluxDB, Point, WriteApi } from "@influxdata/influxdb-client";
-import { INFLUX_BUCKET, INFLUX_ORG, INFLUX_TOKEN, INFLUX_URL } from "./env";
+import { InfluxDBClient, Point } from "@influxdata/influxdb3-client";
+import { INFLUX_TOKEN, INFLUX_HOST, INFLUX_DATABASE } from "./env";
 import { GenericData, TypedValue } from "./types";
 import { PRIMARY_KEY } from "./const";
 
@@ -16,34 +16,26 @@ const getKeepAliveAgent = () => {
   return keepAliveAgent;
 };
 
-let influxDB: InfluxDB | undefined;
-const getInfluxDB = () => {
-  if (!influxDB) {
+let influxDBClient: InfluxDBClient | undefined;
+const getInfluxDBClient = () => {
+  if (!influxDBClient) {
     console.log("Creating Influx DB connection");
-    influxDB = new InfluxDB({
-      url: INFLUX_URL,
+    influxDBClient = new InfluxDBClient({
+      host: INFLUX_HOST,
       token: INFLUX_TOKEN,
+      database: INFLUX_DATABASE,
       transportOptions: {
         agent: getKeepAliveAgent(),
       },
     });
   }
-  return influxDB;
+  return influxDBClient;
 };
 
-let writeApi: WriteApi | undefined;
-const getWriteApi = () => {
-  if (!writeApi) {
-    console.log("Creating write API");
-    writeApi = getInfluxDB().getWriteApi(INFLUX_ORG, INFLUX_BUCKET);
-  }
-  return writeApi;
-};
-
-const writeData = (data: GenericData[]) => {
+const writeData = async (data: GenericData[]) => {
   if (data.length > 0) {
     console.log(`Writing ${data.length} points to Influx`);
-    getWriteApi().writePoints(mapToPoints(data));
+    await getInfluxDBClient().write(mapToPoints(data));
   } else {
     console.log(`No Points to write to Influx`);
   }
@@ -51,9 +43,8 @@ const writeData = (data: GenericData[]) => {
 
 const cleanupAndClose = async () => {
   console.log("closing InfluxService...");
-  await writeApi?.close();
-  writeApi = undefined;
-  influxDB = undefined;
+  await influxDBClient?.close();
+  influxDBClient = undefined;
   keepAliveAgent?.destroy();
   keepAliveAgent = undefined;
   console.log("InfluxService closed");
@@ -61,13 +52,13 @@ const cleanupAndClose = async () => {
 
 export const mapToPoints = (generic: GenericData[]) =>
   generic.map((data) => {
-    const point = new Point(data.measurement);
+    const point = Point.measurement(data.measurement);
 
-    point.timestamp(data.at).tag(PRIMARY_KEY, data.key);
+    point.setTimestamp(data.at).setTag(PRIMARY_KEY, data.key);
     if (data.tags) {
       // write tags
       Object.entries(data.tags).forEach(([tagName, tagValue]) => {
-        point.tag(tagName, tagValue);
+        point.setTag(tagName, tagValue);
       });
     }
 
@@ -75,15 +66,15 @@ export const mapToPoints = (generic: GenericData[]) =>
     Object.entries(data.fields).forEach(
       ([fieldName, fieldValue]: [string, TypedValue]) => {
         if ("string" in fieldValue) {
-          point.stringField(fieldName, fieldValue.string);
+          point.setStringField(fieldName, fieldValue.string);
         } else if ("int" in fieldValue) {
-          point.intField(fieldName, fieldValue.int);
+          point.setIntegerField(fieldName, fieldValue.int);
         } else if ("uint" in fieldValue) {
-          point.uintField(fieldName, fieldValue.uint);
+          point.setUintegerField(fieldName, fieldValue.uint);
         } else if ("float" in fieldValue) {
-          point.floatField(fieldName, fieldValue.float);
+          point.setFloatField(fieldName, fieldValue.float);
         } else if ("boolean" in fieldValue) {
-          point.booleanField(fieldName, fieldValue.boolean);
+          point.setBooleanField(fieldName, fieldValue.boolean);
         } else {
           console.warn(`Unknown field type for ${fieldName}:`, fieldValue);
         }

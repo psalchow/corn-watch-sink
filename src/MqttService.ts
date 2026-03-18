@@ -3,7 +3,7 @@ import { MQTT_BROKER_URL, MQTT_USER, MQTT_PASSWORD } from "./env";
 
 export class MqttService<ConfigType> {
   private client: mqtt.MqttClient | undefined;
-  private topicNames: string[];
+  private readonly topicNames: string[];
   private topicConfig: [RegExp, string, ConfigType][];
 
   constructor(
